@@ -17,6 +17,18 @@ class SettingsActivity : Activity() {
   fun title(s:String) { root.addView(TextView(this).apply { text=s; textSize=19f; setTextColor(Color.BLACK); setPadding(0,15,0,8) }) }
   fun button(s:String, f:()->Unit) { root.addView(Button(this).apply { text=s; setOnClickListener { f() } }) }
   title("Meryl Clavier Perso")
+  button("Afficher le dernier plantage") {
+   val crash=getSharedPreferences("diagnostics",MODE_PRIVATE).getString("last_crash",null)
+   val message=crash ?: "Aucun plantage enregistré. Active le clavier, reproduis le problème, puis rouvre cette application."
+   android.app.AlertDialog.Builder(this).setTitle("Diagnostic du clavier")
+    .setMessage(message.take(12000))
+    .setPositiveButton("OK",null)
+    .setNeutralButton("Copier") { _,_->
+     (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager)
+      .setPrimaryClip(android.content.ClipData.newPlainText("Meryl crash",message))
+     Toast.makeText(this,"Diagnostic copié",Toast.LENGTH_SHORT).show()
+    }.show()
+  }
   button("1. Activer le clavier") { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) }
   button("2. Choisir le clavier") { (getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager).showInputMethodPicker() }
   title("Thème")
