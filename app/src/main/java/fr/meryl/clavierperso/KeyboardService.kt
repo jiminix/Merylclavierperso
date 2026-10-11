@@ -35,7 +35,7 @@ class KeyboardService : InputMethodService() {
      setOnClickListener { press(id) }
      if(id !in listOf("space") && (id.length>1 || id in listOf(",","."))) setOnLongClickListener { showEdit(id);true }
     }
-    val wrap=LinearLayout(this).apply { setPadding(2,3,2,3); addView(b,LinearLayout.LayoutParams(-1,-1)) }
+    val wrap=LinearLayout(this).apply { setPadding(2,3,2,3); addView(b,LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT)) }
     val weight=if(id=="space")4.2f else if(id=="enter")1.3f else 1f
     line.addView(wrap,LinearLayout.LayoutParams(0,if(row.contains("space"))dp(69) else dp(53),weight))
    }
