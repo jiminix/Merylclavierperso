@@ -11,7 +11,12 @@ class KeyboardService : InputMethodService() {
  private val prefs by lazy { getSharedPreferences("keyboard",MODE_PRIVATE) }
  private var shifted=false
  private var symbols=false
+ override fun onEvaluateInputViewShown(): Boolean = true
  override fun onCreateInputView(): View = buildKeyboard()
+ override fun onStartInputView(info: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
+  super.onStartInputView(info, restarting)
+  setInputView(buildKeyboard())
+ }
  private fun color(key:String, fallback:String):Int = try { Color.parseColor(prefs.getString(key,fallback)) } catch(e:Exception) { Color.parseColor(fallback) }
  private fun buildKeyboard():View {
   val dark=prefs.getBoolean("dark",true)
@@ -22,7 +27,7 @@ class KeyboardService : InputMethodService() {
   val rows=if(symbols) listOf(listOf("1","2","3","4","5","6","7","8","9","0"),listOf("@","#","€","%","&","-","+","(",")","/"),listOf("*","\"","'",":",";","!","?","accent"),listOf("symbols","comma","space","period","delete","enter"))
     else listOf(listOf("a","z","e","r","t","y","u","i","o","p"),listOf("q","s","d","f","g","h","j","k","l","m"),listOf("shift","w","x","c","v","b","n","accent","delete"),listOf("symbols","comma","space","period","clipboard","downloads","enter"))
   for(row in rows) {
-   val line=LinearLayout(this).apply { orientation=0 }
+   val line=LinearLayout(this).apply { orientation=LinearLayout.HORIZONTAL; minimumHeight=if(row.contains("space")) dp(69) else dp(53) }
    for(id in row) {
     val label=when(id) {"accent"->"´";"shift"->"⇧";"delete"->"⌫";"space"->" "; "symbols"->if(symbols)"ABC" else "?123";"comma"->",";"period"->".";"clipboard"->"▤";"downloads"->"↓";"enter"->"↵";else->if(shifted)id.uppercase() else id}
     val b=TextView(this).apply {
@@ -32,12 +37,14 @@ class KeyboardService : InputMethodService() {
     }
     val wrap=LinearLayout(this).apply { setPadding(2,3,2,3); addView(b,LinearLayout.LayoutParams(-1,-1)) }
     val weight=if(id=="space")4.2f else if(id=="enter")1.3f else 1f
-    line.addView(wrap,LinearLayout.LayoutParams(0,if(id=="space")67 else if(row.contains("space"))67 else 51,weight))
+    line.addView(wrap,LinearLayout.LayoutParams(0,if(row.contains("space"))dp(69) else dp(53),weight))
    }
-   root.addView(line)
+   root.addView(line, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(row.contains("space"))dp(69) else dp(53)))
   }
+  root.minimumHeight=dp(237)
   return root
  }
+ private fun dp(value:Int):Int = (value * resources.displayMetrics.density + 0.5f).toInt()
  private fun press(id:String) {
   val ic=currentInputConnection ?: return
   val custom=id in listOf("accent","comma","period","symbols","shift","delete","enter","clipboard","downloads","emoji","question")
